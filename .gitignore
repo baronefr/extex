@@ -307,3 +307,4 @@ TSWLatexianTemp*
 
 # custom development files
 dev/*
+.vscode/*
