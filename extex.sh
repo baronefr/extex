@@ -134,7 +134,7 @@ for queue_element in "${args[@]}"; do
         echo 'this is a file'
         extex_main $queue_element
     else
-        echo "error: $queue_element is neither a file or a directory"
+        echo "error: $inp is neither a file or a directory"
         exit 1
     fi
 
