@@ -7,7 +7,7 @@ clean-demo: main.tex test.tex
 clean-tex:
 	rm main.*
 
-clean:
+clean-run:
 	rm -rf .extex.build
 	rm -f extex*.tex
 	rm -rf extex-svg/ extex-pdf/

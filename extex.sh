@@ -7,8 +7,10 @@
 
 set -e
 
+color_reset='\e[0m'
+
 function print_help {
-    echo "extex | latex iterative extractor"
+    echo -e "\e[1;33mextex$color_reset | latex iterative extractor"
     echo -e "      |  v1.0 - Barone Francesco\n"
     echo "Usage:  extex [options] ARG1 ARG2 ..."
     echo "  where ARG* can be either a file or a directory. If a directory is prompted, extex is executed on all "
@@ -33,6 +35,14 @@ function print_help {
     echo "Requirements:"
     echo " - A working LaTeX installation. This script should have access to a compiler (pdflatex, xelatex, ...)."
     echo " - pdf2svg for converting pdf to svg files."
+}
+
+function echo_err { # echo for errors
+    echo -e "\e[1;31merror$color_reset: $@"
+}
+
+function hecho { # highlighted echo
+    echo -e "\e[34m$@$color_reset"
 }
 
 # default flags and variables
@@ -76,7 +86,7 @@ while (( $# )); do
 done
 set -- "${args[@]}"
 
-echo "extex | latex iterative extractor"
+echo -e "\e[1;33mextex$color_reset | latex iterative extractor"
 echo -e "      |  v1.0 - Barone Francesco\n"
 
 if $verbose; then
@@ -95,7 +105,7 @@ fi
 # check if compiler exists
 $verbose && echo "checking compiler"
 if ! command -v $compiler_command 2>&1 >/dev/null; then
-    echo "error: <$compiler_command> (compiler) is not valid"
+    echo_err "<$compiler_command> (compiler) is not valid"
     exit 1
 fi
 $verbose && echo "compiler check successful"
@@ -103,7 +113,7 @@ $verbose && echo "compiler check successful"
 if $make_svg; then
     $verbose && echo "checking pdf2svg"
     if ! command -v pdf2svg 2>&1 >/dev/null; then
-        echo "error: pdf2svg could not be found"
+        echo_err "pdf2svg could not be found"
         exit 1
     fi
     $verbose && echo "pdf2svg check successful"
@@ -111,7 +121,7 @@ fi
 
 # check mandatory arguments (at least one)
 if [ ${#args[@]} -eq 0 ]; then
-    echo "error: empty argument(s)! You must prompt at least a directory or a file."
+    echo_err "empty argument(s)! You must prompt at least a directory or a file."
     exit 1
 fi
 
@@ -135,7 +145,7 @@ fi
 if test -f $MAINFILE; then
     $verbose && echo "main TeX file exists"
 else
-    echo "error: main TeX file does not exist. You must provide one!"
+    echo_err "main TeX file does not exist. You must provide one!"
     exit 1
 fi
 
@@ -207,7 +217,7 @@ function extex_main {
         $compiler_command $compiler_flags -output-directory=$BUILDDIR $BUILDFILE
     fi
     if [ $? -ne 0 ]; then # checking the output of the last command
-        echo "error: compilation process failed"
+        echo_err "compilation process failed"
         echo "       I suggest to look at the compiler output (main.log)"
         echo "       or to suppress compiler quietness with the flag --no-quiet."
         echo "       The build file ($BUILDFILE) is kept for debugging."
@@ -232,18 +242,18 @@ for queue_element in "${args[@]}"; do
 
     if [ -d "$queue_element" ]; then # this is a directory, loop for all the files inside
         [[ "${queue_element}" != */ ]] && queue_element="${queue_element}/" # adding / to directory, if not provided
-        echo "exploring directory $queue_element..."
+        hecho "exploring directory $queue_element..."
         for filename in "$queue_element"$QUEUE_RULE; do
             if [ -f "$filename" ]; then
-                echo "∟ processing $filename"
+                hecho "∟ processing $filename"
                 extex_main $filename
             fi
         done
     elif [ -f "$queue_element" ]; then # this is a file
-        echo "processing $queue_element"
+        hecho "processing $queue_element"
         extex_main $queue_element
     else
-        echo "error: $inp is neither a file or a directory"
+        echo_err "$inp is neither a file or a directory"
         exit 1
     fi
 
