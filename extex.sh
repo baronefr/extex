@@ -24,11 +24,15 @@ function print_help {
     echo "  --no-preview     Disable preview patchin (the content is wrapped in preview environment)."
     echo ""
     echo "  -c | --compiler  Compiler binary (pdflatex/xelatex or custom). Default is pdflatex."
-    echo "  -e               By default, compiler output is suppressed to /dev/null."
-    echo "                   If this flag is prompted, stdout is not suppressed."
     echo "  -f | --flags     Compiler flags. Default is -halt-on-error."
+    echo "  --no-quiet       By default, compiler output is suppressed to /dev/null."
+    echo "                    If this flag is prompted, stdout is not suppressed."
     echo ""
     echo "  -v | --verbose   Print additional debug details."
+    echo ""
+    echo "Requirements:"
+    echo " - A working LaTeX installation. This script should have access to a compiler (pdflatex, xelatex, ...)."
+    echo " - pdf2svg for converting pdf to svg files."
 }
 
 # default flags and variables
@@ -47,15 +51,15 @@ args=( )
 while (( $# )); do
   case $1 in
     -v|--verbose) verbose=true;;
-    -r|--rule) QUEUE_RULE=$2
-        shift;;
     -p|--preamble) MAINFILE=$2 
+        shift;;
+    -r|--rule) QUEUE_RULE=$2
         shift;;
     -s|--svg) make_svg=true;;
     -c|--compiler) compiler_command=$2
         shift;;
-    -e) compiler_quiet=false;;
-    -f) compiler_flags=$2
+    --no-quiet) compiler_quiet=false;;
+    -f|--flags) compiler_flags=$2
         shift;;
     --no-preview) PATCH_preview=false;;
     --out-pdf) OUTPUT_PDF_DIR=$2 
@@ -76,16 +80,36 @@ echo "extex | latex iterative extractor"
 echo -e "      |  v1.0 - Barone Francesco\n"
 
 if $verbose; then
-    echo "execution summary:"
-    echo " | MAINFILE=$MAINFILE"
+    echo "argument parsing summary:"
     echo " | args: ${args[@]}"
+    echo " | MAINFILE=$MAINFILE"
     echo " | OUTPUT_PDF_DIR=$OUTPUT_PDF_DIR"
     echo " | OUTPUT_SVG_DIR=$OUTPUT_SVG_DIR"
     echo " | make_svg=$make_svg"
     echo " | compiler_command=$compiler_command"
+    echo " | compiler_flags$compiler_flags"
     echo " | compiler_quiet=$compiler_quiet"
+    echo " | PATCH_preview=$PATCH_preview"
 fi
 
+# check if compiler exists
+$verbose && echo "checking compiler"
+if ! command -v $compiler_command 2>&1 >/dev/null; then
+    echo "error: <$compiler_command> (compiler) is not valid"
+    exit 1
+fi
+$verbose && echo "compiler check successful"
+# check if pdf2svg exists
+if $make_svg; then
+    $verbose && echo "checking pdf2svg"
+    if ! command -v pdf2svg 2>&1 >/dev/null; then
+        echo "error: pdf2svg could not be found"
+        exit 1
+    fi
+    $verbose && echo "pdf2svg check successful"
+fi
+
+# check mandatory arguments (at least one)
 if [ ${#args[@]} -eq 0 ]; then
     echo "error: empty argument(s)! You must prompt at least a directory or a file."
     exit 1
@@ -185,7 +209,7 @@ function extex_main {
     if [ $? -ne 0 ]; then # checking the output of the last command
         echo "error: compilation process failed"
         echo "       I suggest to look at the compiler output (main.log)"
-        echo "       or to suppress compiler quietness with the flag -e."
+        echo "       or to suppress compiler quietness with the flag --no-quiet."
         echo "       The build file ($BUILDFILE) is kept for debugging."
         exit 1
     fi
