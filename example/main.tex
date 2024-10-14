@@ -1,6 +1,33 @@
 \documentclass{article}
-% bla...
-% bla...
+\usepackage{tikz} % for tikzpictures
+\usepackage{lipsum} % for dummy text
+
+% end of preamble
+
 \begin{document}
-You should not see this!
+
+\section{extex example}
+
+\lipsum[1-3]
+
+\input{inputs/lindbladian.tex}
+
+\lipsum[4-5]
+
+\begin{figure}
+    \centering
+    \input{inputs/full-connected-spin.tex}
+    \caption{This is an all-to-all connected spin model.}
+\end{figure}
+
+\lipsum[6-7]
+
+\begin{figure}
+    \centering
+    \input{inputs/minor-embedding.tex}
+    \caption{Minor embedding problem.}
+\end{figure}
+
+\lipsum[8-10]
+
 \end{document}
