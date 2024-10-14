@@ -145,17 +145,17 @@ fi
 if test -f $MAINFILE; then
     $verbose && echo "main TeX file exists"
 else
-    echo_err "main TeX file does not exist. You must provide one!"
+    echo_err "preamble TeX file does not exist. You must provide one!"
     exit 1
 fi
 
 # prepare the build file
-$verbose && echo "interrogating main TeX file: $MAINFILE"
+$verbose && echo "interrogating preamble TeX file: $MAINFILE"
 MAINFILE_LINECUT=$(awk '/begin{document}/{ print NR; exit }' $MAINFILE)
-$verbose && echo "interrogating result <$MAINFILE_LINECUT>"
+$verbose && echo "interrogating result var <$MAINFILE_LINECUT>"
 if [ -z "${MAINFILE_LINECUT}" ]; then
     # in this case, the main file does not contain \begin{document}
-    echo "no \begin{document} found, assuming main file is a template"
+    echo "no \begin{document} found, assuming this preamble file is a template"
     cp $MAINFILE $BUILD_TEMPLATE
 else
     # in this case, the main file contains \begin{document}
@@ -164,7 +164,7 @@ else
 fi
 
 # patchers
-PATCH_CROP_PREVIEW_PREAMBLE="\usepackage[displaymath,tightpage,active]{preview}"
+PATCH_CROP_PREVIEW_PREAMBLE="\usepackage[displaymath,tightpage,active]{preview}" # TODO potential issue: package preview already used in class definition
 PATCH_CROP_PREVIEW_BEGIN="\begin{preview}"
 PATCH_CROP_PREVIEW_END="\end{preview}"
 
